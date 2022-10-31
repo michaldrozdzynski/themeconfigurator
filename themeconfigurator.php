@@ -83,6 +83,11 @@ class Themeconfigurator extends Module
             $this->postProcess();
         }
 
+        if (((bool)Tools::isSubmit('updateThemeconfiguratorModule')) == true) {
+            $this->postProcess();
+        }
+
+
         if (Tools::isSubmit('addElement')) {
             return $this->renderForm();
         }
@@ -92,6 +97,10 @@ class Themeconfigurator extends Module
 
             $db = \Db::getInstance();
             $db->delete('themeconfigurator', 'id_themeconfigurator = ' . $id);
+        }
+
+        if (Tools::isSubmit('updatethemeconfigurator')) {
+            return $this->renderUpdateForm();
         }
 
 
@@ -162,7 +171,7 @@ class Themeconfigurator extends Module
         $helper->simple_header = false;
         $helper->identifier = 'id_themeconfigurator';
         $helper->table = 'themeconfigurator';
-        $helper->actions = ['delete'];
+        $helper->actions = ['edit', 'delete'];
         $helper->show_toolbar = false;
         $helper->_default_pagination = 10;
         $helper->listTotal = count($result);
@@ -205,6 +214,113 @@ class Themeconfigurator extends Module
     /**
      * Create the form that will be displayed in the configuration of your module.
      */
+    protected function renderUpdateForm()
+    {
+        $id = Tools::getValue('id_themeconfigurator');
+
+        $query =  'SELECT * FROM ' . _DB_PREFIX_ . 'themeconfigurator WHERE id_themeconfigurator=' . $id;
+        $db = \Db::getInstance();
+
+        $row = $db->getRow($query);
+
+        $helper = new HelperForm();
+
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
+
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'updateThemeconfiguratorModule';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+            .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->tpl_vars = array(
+            'fields_value' => [
+                'text1' => $row['text1'],
+                'text2' => $row['text2'],
+                'text3' => $row['text3'],
+                'text4' => $row['text4'],
+                'name' => $row['name'],
+                'url' => $row['url'],
+                'id_themeconfigurator' => $row['id_themeconfigurator'],
+            ], /* Add values for your inputs */
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id,
+        );
+
+        return $helper->generateForm(array($this->getUpdateConfigForm()));
+    }
+
+    /**
+     * Create the structure of your form.
+     */
+    protected function getUpdateConfigForm()
+    {
+        return array(
+            'form' => array(
+                'legend' => array(
+                'title' => $this->l('Settings'),
+                'icon' => 'icon-cogs',
+                ),
+                'input' => array(
+                    array(
+                        'required' => true,
+                        'type' => 'file',
+                        'name' => 'image',
+                        'label' => $this->l('Image'),
+                    ),
+                    array(
+                        'type' => 'hidden',
+                        'name' => 'id_themeconfigurator',
+                    ),
+                    array(
+                        'col' => 4,
+                        'required' => true,
+                        'type' => 'text',
+                        'name' => 'name',
+                        'label' => $this->l('Name'),
+                    ),
+                    array(
+                        'col' => 4,
+                        'type' => 'text',
+                        'name' => 'text1',
+                        'label' => $this->l('Text 1'),
+                    ),
+                    array(
+                        'col' => 4,
+                        'type' => 'text',
+                        'name' => 'text2',
+                        'label' => $this->l('Text 2'),
+                    ),
+                    array(
+                        'col' => 4,
+                        'type' => 'text',
+                        'name' => 'text3',
+                        'label' => $this->l('Text 3'),
+                    ),
+                    array(
+                        'col' => 4,
+                        'type' => 'text',
+                        'name' => 'text4',
+                        'label' => $this->l('Text 4'),
+                    ),
+                    array(
+                        'col' => 4,
+                        'type' => 'text',
+                        'name' => 'url',
+                        'label' => $this->l('URL'),
+                    ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save'),
+                ),
+            ),
+        );
+    }
+
     protected function renderForm()
     {
         $helper = new HelperForm();
@@ -264,34 +380,29 @@ class Themeconfigurator extends Module
                     ),
                     array(
                         'col' => 4,
-                        'required' => true,
                         'type' => 'text',
                         'name' => 'text1',
                         'label' => $this->l('Text 1'),
                     ),
                     array(
-                        'required' => true,
                         'col' => 4,
                         'type' => 'text',
                         'name' => 'text2',
                         'label' => $this->l('Text 2'),
                     ),
                     array(
-                        'required' => true,
                         'col' => 4,
                         'type' => 'text',
                         'name' => 'text3',
                         'label' => $this->l('Text 3'),
                     ),
                     array(
-                        'required' => true,
                         'col' => 4,
                         'type' => 'text',
                         'name' => 'text4',
                         'label' => $this->l('Text 4'),
                     ),
                     array(
-                        'required' => true,
                         'col' => 4,
                         'type' => 'text',
                         'name' => 'url',
@@ -317,6 +428,7 @@ class Themeconfigurator extends Module
         $text4 = Tools::getValue('text4');
         $url = Tools::getValue('url');
         $name = Tools::getValue('name');
+        $id = Tools::getValue('id_themeconfigurator');
 
         if (isset($_FILES['image']))    {
               $target_dir = _PS_MODULE_DIR_. '/themeconfigurator/images/';
@@ -348,16 +460,28 @@ class Themeconfigurator extends Module
                   if (move_uploaded_file($_FILES['image']["tmp_name"], $file_path)) {
                         $db = \Db::getInstance();
 
-                        /** @var bool $result */
-                        $db->insert('themeconfigurator', [
-                            'image' => $filename,
-                            'text1' => $text1,
-                            'text2' => $text2,
-                            'text3' => $text3,
-                            'text4' => $text4,
-                            'name' => $name,
-                            'url' => $url
-                        ]);
+                        if ($id) {
+                            $db->update('themeconfigurator', [
+                                'image' => $filename,
+                                'text1' => $text1,
+                                'text2' => $text2,
+                                'text3' => $text3,
+                                'text4' => $text4,
+                                'name' => $name,
+                                'url' => $url
+                            ], 'id_themeconfigurator=' . $id);
+                        } else {
+                            /** @var bool $result */
+                            $db->insert('themeconfigurator', [
+                                'image' => $filename,
+                                'text1' => $text1,
+                                'text2' => $text2,
+                                'text3' => $text3,
+                                'text4' => $text4,
+                                'name' => $name,
+                                'url' => $url
+                            ]);
+                        }
                   }
             }
         }

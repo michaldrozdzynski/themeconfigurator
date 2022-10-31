@@ -14,8 +14,12 @@ class ThemeconfiguratorAjaxModuleFrontController extends ModuleFrontController
      */
     public function initContent()
     {
-
         $query =  'SELECT * FROM ' . _DB_PREFIX_ . 'themeconfigurator WHERE 1=1';
+        $name = Tools::getValue('name');
+        if (Tools::getValue('name')) {
+            $query =  'SELECT * FROM ' . _DB_PREFIX_ . 'themeconfigurator WHERE name="' . $name . '"';
+        }
+        
         $db = \Db::getInstance();
         $results = $db->executeS($query);
 
